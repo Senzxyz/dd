@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYPHER — One Loader. Every Supported Game.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#070709',
+                        card: '#101014',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#070709] text-white min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
+
+    <!-- NAVBAR -->
+    <header class="sticky top-0 z-50 bg-[#0a0a0c]/80 backdrop-blur-md border-b border-white/[0.08]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="#" onclick="router.navigate('home')" class="flex items-center space-x-2 cursor-pointer">
+                <span class="font-bold tracking-wider text-xl text-white">SYPHER</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-neutral-400">
+                <button onclick="router.navigate('home')" class="hover:text-white transition-colors">Home</button>
+                <button onclick="router.navigate('games')" class="hover:text-white transition-colors">Games</button>
+                <button onclick="router.navigate('donate')" class="hover:text-white transition-colors">Donate</button>
+                <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1 hover:text-white transition-colors">
+                    <span>Discord</span>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-70"></i>
+                </a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-neutral-400 hover:text-white focus:outline-none">
+                <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0a0a0c] border-b border-white/[0.08] px-4 pt-2 pb-4 space-y-3">
+            <button onclick="router.navigate('home'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-1">Home</button>
+            <button onclick="router.navigate('games'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-1">Games</button>
+            <button onclick="router.navigate('donate'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-1">Donate</button>
+            <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1 text-neutral-300 hover:text-white py-1">
+                <span>Discord</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-70"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="app-container" class="flex-1">
+        <!-- Rendered dynamically -->
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/[0.08] bg-[#070709] text-neutral-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+            <div>
+                <span class="font-bold text-white text-lg tracking-wider">SYPHER</span>
+                <p class="text-xs text-neutral-500 mt-1">One Loader. Every Supported Game.</p>
+            </div>
+
+            <div class="flex space-x-6 text-sm">
+                <button onclick="router.navigate('home')" class="hover:text-white transition-colors">Home</button>
+                <button onclick="router.navigate('games')" class="hover:text-white transition-colors">Games</button>
+                <button onclick="router.navigate('donate')" class="hover:text-white transition-colors">Donate</button>
+                <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Discord</a>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-white/[0.04] text-xs text-neutral-600 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+            <p>© <span id="current-year"></span> SYPHER. All rights reserved.</p>
+            <p class="text-center sm:text-right">SYPHER is not affiliated with, endorsed, or sponsored by Roblox Corporation.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        const siteConfig = {
+            name: "SYPHER HUB",
+            tagline: "One Loader. Every Supported Game.",
+            loaderUrl: 'loadstring(game:HttpGet("https://raw.githubusercontent.com/SYMBIOSHUB/SYMBIOS-HUB/refs/heads/main/SYMBIOS.lua"))()',
+            discordUrl: "https://discord.gg/h52vXUrdp",
+        };
+
+        // กำหนดข้อมูลเกม รูปภาพ และฟีเจอร์ต่างๆ ตรงนี้ได้เลย (ใส่ลิงก์รูปภาพตรงช่อง thumbnail ได้ตามต้องการ)
+        const rawGamesConfig = [
+            // { 
+            //     placeId: 106484206883664, 
+            //     name: "Blox Fruits", 
+            //     description: "Master the blade and become the most powerful blox fruit user with advanced automated farming systems.", 
+            //     thumbnail: "https://tr.https://tr.https://tr.rbxcdn.com/180DAY-74e3238344382f02297e172c0366b7a5/768/432/Image/Webp/noFilter.com/180DAY-74e3238344382f02297e172c0366b7a5/768/432/Image/Webp/noFilter.com/18bf0a012a8a5b23d538e12d59146522/768/432/Image/Png", // เปลี่ยนลิงก์รูปได้ที่นี่
+            //     features: ["Auto Farm Level", "Auto Stats", "Sea Events Tracker", "Auto Chest Collect", "Devil Fruit Sniper"] 
+            // },
+            { 
+                placeId: 106484206883664, 
+                name: "Dungeon Lootr [🎉RELEASE]", 
+                description: "Full Auto", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-74e3238344382f02297e172c0366b7a5/768/432/Image/Webp/noFilter", // เปลี่ยนลิงก์รูปได้ที่นี่
+                features: ["Auto Parry/Block",  "Auto Ability Spammer"] 
+            },
+            { 
+                placeId: 107653945083776, 
+                name: "Roll Anime to Fight!", 
+                description: "Full Auto", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-6846bad16c319672d57af6f1a8520871/768/432/Image/Webp/noFilter", // เปลี่ยนลิงก์รูปได้ที่นี่
+                features: ["Full Auto"] 
+            },
+            // { 
+            //     placeId: 920587237, 
+            //     name: "Adopt Me!", 
+            //     description: "Efficiently manage tasks, pet aging, and currency collection in the biggest Roblox economy.", 
+            //     thumbnail: "https://tr.rbxcdn.com/56236b28d7122e2329759c50aa738ee7/768/432/Image/Png", // เปลี่ยนลิงก์รูปได้ที่นี่
+            //     features: ["Auto Age Up Pets", "Auto Farm Money", "Trade Scammer Detector", "Auto Feed/Water"] 
+            // },
+            // { 
+            //     placeId: 142823291, 
+            //     name: "Murder Mystery 2", 
+            //     description: "Gain complete situational awareness with advanced ESP, role detection, and coin route automation.", 
+            //     thumbnail: "https://tr.rbxcdn.com/7b949980d28271e84a2ee6f5f3e46c7f/768/432/Image/Png", // เปลี่ยนลิงก์รูปได้ที่นี่
+            //     features: ["ESP Sheriff & Murderer", "Auto Grab Gun", "Coin Farm Route", "Silent Aim", "Custom Skins"] 
+            // },
+            // { 
+            //     placeId: 286090429, 
+            //     name: "Arsenal", 
+            //     description: "Elevate your competitive edge with optimized aiming support and visual trackers.", 
+            //     thumbnail: "https://tr.rbxcdn.com/e5fef7645eb4398bc83f0581452bc577/768/432/Image/Png", // เปลี่ยนลิงก์รูปได้ที่นี่
+            //     features: ["Aimbot & Smooth Silent Aim", "ESP Box & Skeleton", "No Recoil / No Spread", "Custom FOV Circle"] 
+            // }
+        ];
+
+        let loadedGames = [];
+        let currentRoute = 'home';
+        let routeParam = null;
+
+        function slugify(text) {
+            return text.toLowerCase().replace(/[^\w ]+/g, "").replace(/ +/g, "-");
+        }
+
+        // จัดการข้อมูลเกมพร้อมใช้งาน
+        function initGames() {
+            loadedGames = rawGamesConfig.map((config) => ({
+                placeId: config.placeId,
+                slug: slugify(config.name),
+                name: config.name,
+                description: config.description,
+                thumbnail: config.thumbnail,
+                features: config.features
+            }));
+            render();
+        }
+
+        const router = {
+            navigate: (route, param = null) => {
+                currentRoute = route;
+                routeParam = param;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                render();
+            }
+        };
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function copyLoader() {
+            navigator.clipboard.writeText(siteConfig.loaderUrl);
+            const btn = document.getElementById('copy-btn-text');
+            const toast = document.getElementById('toast-notification');
+            
+            btn.textContent = "Copied";
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                btn.textContent = "Copy";
+                toast.classList.add('hidden');
+            }, 2500);
+        }
+
+        // --- VIEWS ---
+        function renderHome() {
+            return `
+                <div class="space-y-24 pb-12">
+                    <!-- Hero Section -->
+                    <section class="relative pt-20 pb-12 text-center px-4">
+                        <div class="max-w-3xl mx-auto space-y-6">
+                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] text-neutral-300 border border-white/[0.08]">
+                                <span>${loadedGames.length}+ Supported Games & Counting</span>
+                            </div>
+                            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white">
+                                One Loader. Every Supported Game.
+                            </h1>
+                            <p class="text-base sm:text-lg text-neutral-400 max-w-2xl mx-auto">
+                                You only need a single SYPHER loader. SYPHER automatically detects and configures compatible games instantly.
+                            </p>
+                            <div class="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
+                                <a href="#loader" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors text-center">
+                                    Get Loader
+                                </a>
+                                <button onclick="router.navigate('games')" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-white/[0.06] text-white font-semibold text-sm border border-white/[0.1] hover:bg-white/[0.1] transition-colors">
+                                    Browse Games
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Universal Loader Section -->
+                    <section id="loader" class="max-w-4xl mx-auto px-4">
+                        <div class="text-center mb-8 space-y-2">
+                            <h2 class="text-2xl font-bold text-white">Universal Loader</h2>
+                            <p class="text-sm text-neutral-400">One loader for every supported SYPHER game.</p>
+                        </div>
+                        <div class="w-full max-w-2xl mx-auto rounded-xl bg-[#101014] border border-white/[0.08] overflow-hidden shadow-2xl">
+                            <div class="flex items-center justify-between px-4 py-3 bg-[#15151a] border-b border-white/[0.06]">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-neutral-600"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-neutral-600"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-neutral-600"></div>
+                                    <span class="text-xs text-neutral-500 font-mono ml-2">loader.lua</span>
+                                </div>
+                                <div class="relative">
+                                    <button onclick="copyLoader()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-white/[0.06] hover:bg-white/[0.1] text-xs font-medium text-neutral-300 hover:text-white transition-all border border-white/[0.08]">
+                                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                        <span id="copy-btn-text">Copy</span>
+                                    </button>
+                                    <div id="toast-notification" class="hidden absolute right-0 -bottom-10 bg-[#121216] border border-white/10 text-white text-[11px] px-3 py-1 rounded shadow-lg whitespace-nowrap animate-fade-in">
+                                        Loader copied to clipboard.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 font-mono text-xs sm:text-sm text-neutral-300 overflow-x-auto">
+                                <code>${siteConfig.loaderUrl}</code>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Supported Games Preview -->
+                    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-end mb-8">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Supported Games</h2>
+                                <p class="text-sm text-neutral-400 mt-1">Preview of top experiences compatible with SYPHER.</p>
+                            </div>
+                            <button onclick="router.navigate('games')" class="hidden sm:flex items-center space-x-1 text-sm font-medium text-neutral-300 hover:text-white transition-colors">
+                                <span>View All Games</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${loadedGames.slice(0, 6).map(game => renderGameCard(game)).join('')}
+                        </div>
+
+                        <div class="mt-8 text-center sm:hidden">
+                            <button onclick="router.navigate('games')" class="inline-flex items-center space-x-1 text-sm font-medium text-white underline">
+                                <span>View All Games</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
+        function renderGames() {
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 animate-fade-in">
+                    <div class="text-center space-y-3">
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Supported Games</h1>
+                        <p class="text-sm sm:text-base text-neutral-400 max-w-xl mx-auto">
+                            Explore every Roblox experience currently supported by SYPHER.
+                        </p>
+                        <div class="inline-block px-3 py-1 rounded-full bg-white/[0.04] text-neutral-300 border border-white/[0.08] text-xs font-medium">
+                            <span>${loadedGames.length}</span> Games Available
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="relative max-w-md mx-auto">
+                            <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500"></i>
+                            <input 
+                                type="text" 
+                                oninput="filterGames(this.value)" 
+                                placeholder="Search games..." 
+                                class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-[#101014] border border-white/[0.08] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white/30 transition-colors"
+                            />
+                        </div>
+
+                        <div id="games-grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${loadedGames.map(game => renderGameCard(game)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameDetail(slug) {
+            const game = loadedGames.find(g => g.slug === slug);
+            if (!game) return renderGames();
+
+            return `
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-in">
+                    <button onclick="router.navigate('games')" class="inline-flex items-center space-x-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Games</span>
+                    </button>
+
+                    <div class="rounded-2xl bg-[#101014] border border-white/[0.08] overflow-hidden p-6 sm:p-8 space-y-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-neutral-900 border border-white/[0.08] flex-shrink-0">
+                                    <img src="${game.thumbnail}" alt="${game.name}" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="space-y-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                                        Supported
+                                    </span>
+                                    <h1 class="text-2xl sm:text-3xl font-bold text-white">${game.name}</h1>
+                                </div>
+                            </div>
+
+                            <a href="https://www.roblox.com/games/${game.placeId}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors">
+                                <span>Play Game</span>
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+
+                        <div class="pt-4 border-t border-white/[0.06]">
+                            <h3 class="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Description</h3>
+                            <p class="text-sm text-neutral-300 leading-relaxed">${game.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-white">Supported Features</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            ${game.features.map(feat => `
+                                <div class="flex items-center space-x-3 p-3 rounded-lg bg-[#101014] border border-white/[0.06]">
+                                    <div class="p-1 rounded bg-emerald-500/10 text-emerald-400">
+                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-neutral-200">${feat}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDonate() {
+            return `
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-12 animate-fade-in">
+                    <div class="text-center space-y-3">
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Support SYPHER</h1>
+                        <p class="text-sm sm:text-base text-neutral-400 max-w-md mx-auto">
+                            Help support the development and maintenance of SYPHER.
+                        </p>
+                    </div>
+
+                    <div class="max-w-md mx-auto text-center py-16 px-6 rounded-2xl bg-[#101014] border border-white/[0.08] relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none"></div>
+                        <div class="w-36 h-36 mx-auto mb-6 rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center bg-neutral-900/50">
+                            <span class="text-xs font-mono text-neutral-600 tracking-wider">[ QR_PLACEHOLDER ]</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Coming Soon</h3>
+                        <p class="text-sm text-neutral-400">Donation system is currently being prepared.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameCard(game) {
+            return `
+                <div onclick="router.navigate('detail', '${game.slug}')" class="group flex flex-col rounded-xl bg-[#101014] border border-white/[0.08] hover:border-white/[0.2] transition-all duration-300 overflow-hidden hover:-translate-y-1 cursor-pointer">
+                    <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
+                        <img src="${game.thumbnail}" alt="${game.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 right-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                                Supported
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-between">
+                        <div>
+                            <h3 class="font-semibold text-white text-base group-hover:text-neutral-200 transition-colors line-clamp-1">${game.name}</h3>
+                            <p class="text-xs text-neutral-400 mt-1.5 line-clamp-2">${game.description}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-neutral-400">
+                            <span class="font-medium text-neutral-300">${game.features.length} Features Available</span>
+                            <span class="flex items-center space-x-1 text-white group-hover:underline">
+                                <span>View Details</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterGames(query) {
+            const filtered = loadedGames.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
+            const container = document.getElementById('games-grid-container');
+            if (filtered.length > 0) {
+                container.innerHTML = filtered.map(game => renderGameCard(game)).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-16 bg-[#101014] rounded-xl border border-white/[0.08]">
+                        <p class="text-neutral-400 text-sm">No games found.</p>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function render() {
+            const container = document.getElementById('app-container');
+            if (currentRoute === 'home') {
+                container.innerHTML = renderHome();
+            } else if (currentRoute === 'games') {
+                container.innerHTML = renderGames();
+            } else if (currentRoute === 'detail') {
+                container.innerHTML = renderGameDetail(routeParam);
+            } else if (currentRoute === 'donate') {
+                container.innerHTML = renderDonate();
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        initGames();
+    </script>
+</body>
+</html>
