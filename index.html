@@ -262,14 +262,15 @@
                     <!-- Hero Section -->
                     <section class="relative pt-12 pb-6 px-4">
                         <div class="max-w-4xl mx-auto space-y-6 text-center">
+                            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/[0.06] text-neutral-200 border border-white/10 shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                                <span>⚡ Fully supports ${loadedGames.length} Games</span>
+                            </div>
+
                             <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
                                 One Loader. <br class="hidden sm:inline" />
                                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-300 to-neutral-500">Every Supported Game.</span>
                             </h1>
-                            
-                            <p class="text-sm sm:text-base text-neutral-400 max-w-xl mx-auto leading-relaxed">
-                                Universal Roblox script framework engineered with high-speed execution, bypass modules, and lightning-fast updates.
-                            </p>
 
                             <!-- Universal Loader Box -->
                             <div class="pt-2 max-w-2xl mx-auto">
@@ -295,11 +296,6 @@
                                     <div class="p-4 font-mono text-xs sm:text-sm overflow-x-auto bg-[#040404]">
                                         <code><span class="syntax-keyword">loadstring</span><span class="syntax-bracket">(</span>game<span class="syntax-bracket">:</span><span class="syntax-method">HttpGet</span><span class="syntax-bracket">(</span><span class="syntax-string">"https://raw.githubusercontent.com/SYMBIOSHUB/SYMBIOS-HUB/refs/heads/main/SYMBIOS.lua"</span><span class="syntax-bracket">))</span><span class="syntax-bracket">()</span></code>
                                     </div>
-                                </div>
-                                <div class="mt-3 text-center">
-                                    <span class="text-xs font-medium text-neutral-400 bg-white/[0.04] border border-white/[0.08] px-3.5 py-1.5 rounded-full">
-                                        ⚡ Fully supports <strong class="text-white">${loadedGames.length} Games</strong> across Roblox
-                                    </span>
                                 </div>
                             </div>
                         </div>
