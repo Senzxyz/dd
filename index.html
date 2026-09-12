@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYMBIOS HUB — Universal Script Hub</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:zap.svg?color=%23ffffff">
+
+    <!-- Open Graph / Discord Embed Meta Tags (ข้อความบน รูปภาพล่าง) -->
+    <meta property="Tsu-Embed-Color" content="#ffffff">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SYMBIOS HUB">
+    <meta property="og:description" content="One loader for every supported game. Free, no key, always updated.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/Senzxyz/dd/refs/heads/main/SYMHUB.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#030303',
+                        card: '#0a0a0a',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.15; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.05); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+        .glow-effect {
+            animation: pulseGlow 6s ease-in-out infinite;
+        }
+        .syntax-keyword { color: #f472b6; }
+        .syntax-method { color: #60a5fa; }
+        .syntax-string { color: #34d399; }
+        .syntax-bracket { color: #fbbf24; }
+    </style>
+</head>
+<body class="bg-[#030303] text-white min-h-screen flex flex-col antialiased selection:bg-white selection:text-black relative overflow-x-hidden">
+
+    <!-- Ambient Glow Background -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-white/[0.04] blur-[120px] pointer-events-none glow-effect rounded-full z-0"></div>
+
+    <!-- NAVBAR -->
+    <header class="sticky top-0 z-50 bg-[#030303]/90 backdrop-blur-xl border-b border-white/[0.08]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative z-10">
+            <a href="#" onclick="router.navigate('home')" class="flex items-center space-x-3 cursor-pointer group">
+                <div class="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-all shadow-lg">
+                    <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold tracking-wider text-base text-white leading-tight">SYMBIOS <span class="text-neutral-400">HUB</span></span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-1 bg-white/[0.03] border border-white/[0.06] p-1 rounded-full px-3">
+                <button onclick="router.navigate('home')" class="px-4 py-1.5 rounded-full text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-all">Home</button>
+                <button onclick="router.navigate('games')" class="px-4 py-1.5 rounded-full text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-all">Games Library</button>
+                <button onclick="router.navigate('donate')" class="px-4 py-1.5 rounded-full text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-all">Donate</button>
+            </nav>
+
+            <div class="hidden md:flex items-center space-x-3">
+                <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white/[0.05] border border-white/10 hover:bg-white/[0.1] text-white text-xs font-semibold transition-all">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>Discord</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-neutral-400 hover:text-white focus:outline-none">
+                <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0a0a0a] border-b border-white/[0.08] px-4 pt-3 pb-5 space-y-2 relative z-10">
+            <button onclick="router.navigate('home'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-2 px-3 rounded-lg hover:bg-white/[0.04]">Home</button>
+            <button onclick="router.navigate('games'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-2 px-3 rounded-lg hover:bg-white/[0.04]">Games Library</button>
+            <button onclick="router.navigate('donate'); toggleMobileMenu();" class="block w-full text-left text-neutral-300 hover:text-white py-2 px-3 rounded-lg hover:bg-white/[0.04]">Donate</button>
+            <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-white py-2 px-3 rounded-lg hover:bg-white/[0.04]">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span>Discord Community</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="app-container" class="flex-1 relative z-10 bg-grid">
+        <!-- Rendered dynamically -->
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/[0.08] bg-[#030303] text-neutral-400 py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-white text-base tracking-wider">SYMBIOS HUB</span>
+                    <p class="text-xs text-neutral-500">Developed by SENZY</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-6 text-sm">
+                <button onclick="router.navigate('home')" class="hover:text-white transition-colors">Home</button>
+                <button onclick="router.navigate('games')" class="hover:text-white transition-colors">Games</button>
+                <button onclick="router.navigate('donate')" class="hover:text-white transition-colors">Donate</button>
+                <a href="https://discord.gg/h52vXUrdp" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Discord</a>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-white/[0.04] text-xs text-neutral-600 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+            <p>© <span id="current-year"></span> SYMBIOS HUB. Created by SENZY. All rights reserved.</p>
+            <p class="text-center sm:text-right">Not affiliated with Roblox Corporation.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        const siteConfig = {
+            name: "SYMBIOS HUB",
+            tagline: "Universal Script Hub",
+            loaderRaw: 'loadstring(game:HttpGet("https://raw.githubusercontent.com/SYMBIOSHUB/SYMBIOS-HUB/refs/heads/main/SYMBIOS.lua"))()',
+            discordUrl: "https://discord.gg/h52vXUrdp",
+        };
+
+        const rawGamesConfig = [
+            { 
+                placeId: 106484206883664, 
+                name: "Dungeon Lootr [🎉RELEASE]", 
+                description: "Full Auto System with intelligent dungeon clearing and item filtering.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-74e3238344382f02297e172c0366b7a5/768/432/Image/Webp/noFilter", 
+                features: ["Auto Parry/Block", "Auto Ability Spammer", "Instant Loot Pickup", "Boss Radar"],
+                status: "Working",
+                statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            },
+            { 
+                placeId: 107653945083776, 
+                name: "Roll Anime to Fight!", 
+                description: "Automated rolling and combat progression system.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-6846bad16c319672d57af6f1a8520871/768/432/Image/Webp/noFilter", 
+                features: ["Full Auto Combat", "Auto Roll Units", "Smart Teleportation"],
+                status: "Working",
+                statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            },
+            { 
+                placeId: 107778070777162, 
+                name: "Steal An Egg", 
+                description: "High-speed resource collection and automated gathering.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-875b2a6dc156ce6dd64eb637e73238ce/768/432/Image/Webp/noFilter", 
+                features: ["Full Auto Gather", "Speed Boost Integration", "Anti-AFK Bypass"],
+                status: "Updating",
+                statusColor: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+            },
+            { 
+                placeId: 102072869879193, 
+                name: "Anime Astral Simulator", 
+                description: "Seamless farming simulation with customized multipliers.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-dfa7f7a3efb732540c051f2b26c5b026/768/432/Image/Webp/noFilter", 
+                features: ["Full Auto Training", "Auto Quest Complete", "Stage Hopper"],
+                status: "Working",
+                statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            },
+            { 
+                placeId: 122446657157717, 
+                name: "[🔥UPD] Sniper Arena", 
+                description: "Advanced precision tracking and automated combat assistance.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-2c5b249563861c4f436e90c5ac598156/768/432/Image/Webp/noFilter", 
+                features: ["Full Auto Aim", "Hitbox Expander", "Visual ESP Radar"],
+                status: "Maintenance",
+                statusColor: "bg-red-500/10 text-red-400 border-red-500/20"
+            },
+            { 
+                placeId: 133188236593503, 
+                name: "Magic Loot [✨ EVENT]", 
+                description: "Special event automation for exclusive rewards and currency.", 
+                thumbnail: "https://tr.rbxcdn.com/180DAY-26895e2f324fa295e25998de6e97d0d0/768/432/Image/Webp/noFilter", 
+                features: ["Event Currency Farmer", "Auto Reward Claim", "Priority Targeting"],
+                status: "Working",
+                statusColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            }
+        ];
+
+        let loadedGames = [];
+        let currentRoute = 'home';
+        let routeParam = null;
+
+        function slugify(text) {
+            return text.toLowerCase().replace(/[^\w ]+/g, "").replace(/ +/g, "-");
+        }
+
+        function initGames() {
+            loadedGames = rawGamesConfig.map((config) => ({
+                placeId: config.placeId,
+                slug: slugify(config.name),
+                name: config.name,
+                description: config.description,
+                thumbnail: config.thumbnail,
+                features: config.features,
+                status: config.status,
+                statusColor: config.statusColor
+            }));
+            render();
+        }
+
+        const router = {
+            navigate: (route, param = null) => {
+                currentRoute = route;
+                routeParam = param;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                render();
+            }
+        };
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function copyLoader() {
+            navigator.clipboard.writeText(siteConfig.loaderRaw);
+            const btn = document.getElementById('copy-btn-text');
+            const toast = document.getElementById('toast-notification');
+            
+            btn.textContent = "Copied!";
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                btn.textContent = "Copy Script";
+                toast.classList.add('hidden');
+            }, 2500);
+        }
+
+        // --- VIEWS ---
+        function renderHome() {
+            return `
+                <div class="space-y-16 pb-20">
+                    <!-- Hero Section -->
+                    <section class="relative pt-12 pb-6 px-4">
+                        <div class="max-w-4xl mx-auto space-y-6 text-center">
+                            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/[0.06] text-neutral-200 border border-white/10 shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                                <span>⚡ Fully supports ${loadedGames.length} Games</span>
+                            </div>
+
+                            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
+                                One Loader. <br class="hidden sm:inline" />
+                                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-300 to-neutral-500">Every Supported Game.</span>
+                            </h1>
+
+                            <!-- Universal Loader Box -->
+                            <div class="pt-2 max-w-2xl mx-auto">
+                                <div class="rounded-2xl bg-[#080808] border border-white/10 overflow-hidden shadow-2xl shadow-black/80 text-left relative group">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent pointer-events-none"></div>
+                                    <div class="flex items-center justify-between px-4 py-3 bg-[#0e0e0e] border-b border-white/[0.08]">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-3 h-3 rounded-full bg-neutral-700"></div>
+                                            <div class="w-3 h-3 rounded-full bg-neutral-700"></div>
+                                            <div class="w-3 h-3 rounded-full bg-neutral-700"></div>
+                                            <span class="text-xs text-neutral-400 font-mono ml-2 font-medium">symbios-loader.lua</span>
+                                        </div>
+                                        <div class="relative">
+                                            <button onclick="copyLoader()" class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold transition-all shadow-md">
+                                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                                <span id="copy-btn-text">Copy Script</span>
+                                            </button>
+                                            <div id="toast-notification" class="hidden absolute right-0 -bottom-10 bg-[#161616] border border-white/20 text-white text-[11px] px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap animate-fade-in z-20">
+                                                Script copied to clipboard!
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 font-mono text-xs sm:text-sm overflow-x-auto bg-[#040404]">
+                                        <code><span class="syntax-keyword">loadstring</span><span class="syntax-bracket">(</span>game<span class="syntax-bracket">:</span><span class="syntax-method">HttpGet</span><span class="syntax-bracket">(</span><span class="syntax-string">"https://raw.githubusercontent.com/SYMBIOSHUB/SYMBIOS-HUB/refs/heads/main/SYMBIOS.lua"</span><span class="syntax-bracket">))</span><span class="syntax-bracket">()</span></code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Features Highlight Grid -->
+                    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                            <div class="p-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.08] space-y-3 hover:border-white/20 transition-all shadow-xl">
+                                <div class="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center text-white mb-3 border border-white/10">
+                                    <i data-lucide="zap" class="w-5 h-5"></i>
+                                </div>
+                                <h3 class="font-bold text-white text-base">Lightning Fast Execution</h3>
+                                <p class="text-xs text-neutral-400 leading-relaxed">Optimized bytecode loading ensuring near-instant execution across all supported executors.</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.08] space-y-3 hover:border-white/20 transition-all shadow-xl">
+                                <div class="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center text-white mb-3 border border-white/10">
+                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                </div>
+                                <h3 class="font-bold text-white text-base">Safe & Undetected</h3>
+                                <p class="text-xs text-neutral-400 leading-relaxed">Constant updates and secure memory handling routines supervised directly by SENZY.</p>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.08] space-y-3 hover:border-white/20 transition-all shadow-xl">
+                                <div class="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center text-white mb-3 border border-white/10">
+                                    <i data-lucide="sliders" class="w-5 h-5"></i>
+                                </div>
+                                <h3 class="font-bold text-white text-base">Modular UI Design</h3>
+                                <p class="text-xs text-neutral-400 leading-relaxed">Powered by clean custom UI libraries giving you smooth navigation and responsive controls.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Supported Games Preview -->
+                    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-end mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white tracking-tight">Popular Games (${loadedGames.length} Supported)</h2>
+                                <p class="text-xs sm:text-sm text-neutral-400 mt-0.5">Top selected titles compatible with SYMBIOS HUB.</p>
+                            </div>
+                            <button onclick="router.navigate('games')" class="hidden sm:flex items-center space-x-1.5 text-xs font-semibold text-white hover:text-neutral-300 transition-colors bg-white/[0.05] px-4 py-2.5 rounded-xl border border-white/10">
+                                <span>Browse All</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${loadedGames.slice(0, 6).map(game => renderGameCard(game)).join('')}
+                        </div>
+
+                        <div class="mt-8 text-center sm:hidden">
+                            <button onclick="router.navigate('games')" class="inline-flex items-center space-x-2 text-sm font-semibold text-white bg-white/[0.05] px-5 py-2.5 rounded-xl border border-white/10">
+                                <span>View All Games</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
+        function renderGames() {
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-in">
+                    <div class="text-center space-y-2">
+                        <h1 class="text-3xl font-black text-white">Games Library (${loadedGames.length} Supported)</h1>
+                        <p class="text-sm text-neutral-400">Search and explore every Roblox experience supported by SYMBIOS HUB.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="relative max-w-lg mx-auto">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"></i>
+                            <input 
+                                type="text" 
+                                oninput="filterGames(this.value)" 
+                                placeholder="Search by game name..." 
+                                class="w-full pl-11 pr-4 py-3 rounded-xl bg-[#0a0a0a] border border-white/10 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white transition-all shadow-inner"
+                            />
+                        </div>
+
+                        <div id="games-grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${loadedGames.map(game => renderGameCard(game)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameDetail(slug) {
+            const game = loadedGames.find(g => g.slug === slug);
+            if (!game) return renderGames();
+
+            return `
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6 animate-fade-in">
+                    <button onclick="router.navigate('games')" class="inline-flex items-center space-x-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors bg-white/[0.04] px-3.5 py-2 rounded-xl border border-white/[0.08]">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Library</span>
+                    </button>
+
+                    <div class="rounded-2xl bg-[#0a0a0a] border border-white/[0.08] overflow-hidden p-6 sm:p-8 space-y-6 shadow-2xl">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="relative w-24 h-24 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 flex-shrink-0 shadow-md">
+                                    <img src="${game.thumbnail}" alt="${game.name}" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="space-y-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${game.statusColor}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse"></span>
+                                        Status: ${game.status}
+                                    </span>
+                                    <h1 class="text-2xl sm:text-3xl font-black text-white">${game.name}</h1>
+                                </div>
+                            </div>
+
+                            <a href="https://www.roblox.com/games/${game.placeId}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-all shadow-lg">
+                                <span>Open Roblox</span>
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+
+                        <div class="pt-4 border-t border-white/[0.06]">
+                            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Overview</h3>
+                            <p class="text-sm text-neutral-300 leading-relaxed">${game.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-bold text-white">Supported Script Features</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            ${game.features.map(feat => `
+                                <div class="flex items-center space-x-3 p-3.5 rounded-xl bg-[#0a0a0a] border border-white/[0.06]">
+                                    <div class="p-1.5 rounded-lg bg-white/10 text-white">
+                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-sm font-semibold text-neutral-200">${feat}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDonate() {
+            return `
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8 animate-fade-in">
+                    <div class="text-center space-y-2">
+                        <h1 class="text-3xl font-black text-white">Support SYMBIOS HUB</h1>
+                        <p class="text-sm text-neutral-400 max-w-md mx-auto">
+                            Donations directly help maintain servers, update scripts, and fund new game additions under SENZY's project.
+                        </p>
+                    </div>
+
+                    <div class="max-w-md mx-auto text-center py-12 px-6 rounded-2xl bg-[#0a0a0a] border border-white/[0.08] relative overflow-hidden shadow-2xl">
+                        <div class="w-36 h-36 mx-auto mb-6 rounded-2xl border-2 border-dashed border-white/20 flex items-center justify-center bg-white/[0.02]">
+                            <i data-lucide="qr-code" class="w-16 h-16 text-neutral-500"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">Gateway Preparing</h3>
+                        <p class="text-xs text-neutral-400">QR code donation system will be available soon.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameCard(game) {
+            return `
+                <div onclick="router.navigate('detail', '${game.slug}')" class="group flex flex-col rounded-2xl bg-[#0a0a0a] border border-white/[0.08] hover:border-white/30 transition-all duration-300 overflow-hidden hover:-translate-y-1.5 cursor-pointer shadow-xl">
+                    <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
+                        <img src="${game.thumbnail}" alt="${game.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 right-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${game.statusColor} backdrop-blur-md">
+                                <span class="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse"></span>
+                                ${game.status}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 justify-between">
+                        <div>
+                            <h3 class="font-bold text-white text-base group-hover:text-neutral-300 transition-colors line-clamp-1">${game.name}</h3>
+                            <p class="text-xs text-neutral-400 mt-1 line-clamp-2 leading-relaxed">${game.description}</p>
+                        </div>
+                        <div class="mt-5 pt-3.5 border-t border-white/[0.06] flex items-center justify-between text-xs text-neutral-400">
+                            <span class="text-neutral-400 font-medium">${game.features.length} Functions</span>
+                            <span class="flex items-center space-x-1 text-white font-semibold group-hover:translate-x-0.5 transition-transform">
+                                <span>Details</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterGames(query) {
+            const filtered = loadedGames.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
+            const container = document.getElementById('games-grid-container');
+            if (filtered.length > 0) {
+                container.innerHTML = filtered.map(game => renderGameCard(game)).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-16 bg-[#0a0a0a] rounded-2xl border border-white/[0.08]">
+                        <p class="text-neutral-400 text-sm">No games matching your search.</p>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function render() {
+            const container = document.getElementById('app-container');
+            if (currentRoute === 'home') {
+                container.innerHTML = renderHome();
+            } else if (currentRoute === 'games') {
+                container.innerHTML = renderGames();
+            } else if (currentRoute === 'detail') {
+                container.innerHTML = renderGameDetail(routeParam);
+            } else if (currentRoute === 'donate') {
+                container.innerHTML = renderDonate();
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        initGames();
+    </script>
+</body>
+</html>
