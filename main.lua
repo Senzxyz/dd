@@ -2,7 +2,7 @@ local SymbiosUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/SYM
 
 local Window = SymbiosUI:Window({
     Title    = "SENZY HUB",
-    Subtitle = "Slayers 2 - Auto Farm",
+    Subtitle = "Slayers 2 - Auto Farm & Tools",
     Size     = UDim2.fromOffset(760, 520),
     Keybind  = Enum.KeyCode.RightControl,
 })
@@ -10,11 +10,12 @@ local Window = SymbiosUI:Window({
 local group    = Window:TabGroup()
 local mainTab  = group:Tab({ Name = "Main", Image = "rbxassetid://18821914323" })
 
--- สร้าง Section ด้านซ้ายและขวา
 local farmSec   = mainTab:Section({ Name = "Farm Control", Side = "Left" })
 local targetSec = mainTab:Section({ Name = "Target Selector", Side = "Right" })
+local visualSec = mainTab:Section({ Name = "Visuals / Lighting", Side = "Right" })
 
 local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
@@ -22,6 +23,7 @@ local Config = {
     AutoQuest = false,
     AutoFarm = false,
     SelectedTarget = "All",
+    Fullbright = false,
 }
 
 local SignalEvent = nil
@@ -29,7 +31,6 @@ pcall(function()
     SignalEvent = ReplicatedStorage.Communication.ServerAndClient.Signals.SignalEvent.Event
 end)
 
--- ฟังก์ชันสแกนหารายชื่อมอนสเตอร์พร้อมเลเวลและเช็ค Boss
 local function getAvailableMonsters()
     local monsterOptions = { "All" }
     local addedNames = { ["All"] = true }
@@ -44,16 +45,6 @@ local function getAvailableMonsters()
                             local name = enemy.Name
                             if not addedNames[name] then
                                 addedNames[name] = true
-                                
-                                -- ดึงเลเวลจากค่า MaxHealth หรือ Attribute (ปรับตามเกมจริง)
-                                local maxHp = enemy.Humanoid.MaxHealth
-                                local estimatedLevel = math.clamp(math.floor(maxHp / 100), 1, 999)
-                                
-                                -- เช็คว่าเป็น Boss หรือไม่
-                                local isBoss = string.find(string.lower(name), "boss") or (maxHp > 5000)
-                                local tag = isBoss and " [BOSS]" or ""
-                                
-                                local displayName = string.format("%s (Lv. %d)%s", name, estimatedLevel, tag)
                                 table.insert(monsterOptions, name)
                             end
                         end
@@ -66,7 +57,6 @@ local function getAvailableMonsters()
     return monsterOptions
 end
 
--- Dropdown สำหรับเลือกมอนสเตอร์
 local dropdownObj = targetSec:Dropdown({
     Name     = "Select Target",
     Options  = { "All" },
@@ -79,7 +69,6 @@ local dropdownObj = targetSec:Dropdown({
     end,
 }, "TargetDropdown")
 
--- ปุ่มรีเฟรชรายชื่อมอนสเตอร์ใน Dropdown
 targetSec:Button({
     Name = "Refresh Monster List",
     Callback = function()
@@ -90,7 +79,6 @@ targetSec:Button({
     end,
 }, "RefreshBtn")
 
--- Toggle เปิด-ปิด Auto Quest
 farmSec:Toggle({
     Name    = "Auto Quest",
     Default = false,
@@ -109,7 +97,6 @@ farmSec:Toggle({
     end,
 }, "AutoQuestToggle")
 
--- ฟังก์ชันหาเป้าหมายมอนสเตอร์ตามที่เลือก
 local function getTargetBySelection()
     local target = nil
     local shortestDistance = math.huge
@@ -144,7 +131,6 @@ local function getTargetBySelection()
     return target
 end
 
--- Toggle เปิด-ปิด Auto Farm
 farmSec:Toggle({
     Name    = "Auto Farm",
     Default = false,
@@ -158,7 +144,6 @@ farmSec:Toggle({
                     if enemy and enemy:FindFirstChild("HumanoidRootPart") then
                         local char = LocalPlayer.Character
                         if char and char:FindFirstChild("HumanoidRootPart") then
-                            -- วาร์ปเกาะติดเหนือหัวมอนสเตอร์
                             char.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
                             if SignalEvent then
                                 SignalEvent:FireServer("Combat_Service", "Combat", 1, true, 0.038, false)
@@ -170,6 +155,44 @@ farmSec:Toggle({
         end)
     end,
 }, "AutoFarmToggle")
+
+-- ระบบ Fullbright แบบลบหมอกและเคลียร์แสง
+local cachedAtmosphere = {}
+visualSec:Toggle({
+    Name = "Fullbright (Remove Darkness & Fog)",
+    Default = false,
+    Callback = function(state)
+        Config.Fullbright = state
+        
+        if Config.Fullbright then
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 999999
+            
+            -- ซ่อนหรือลบ Atmosphere และ DepthOfField ใน Lighting ออกชั่วคราว
+            for _, obj in ipairs(Lighting:GetChildren()) do
+                if obj:IsA("Atmosphere") or obj:IsA("DepthOfFieldEffect") or obj:IsA("BlurEffect") then
+                    table.insert(cachedAtmosphere, {obj = obj, parent = obj.Parent})
+                    obj.Parent = nil
+                end
+            end
+        else
+            -- คืนค่าเดิม
+            Lighting.Brightness = 1
+            Lighting.ClockTime = 12
+            Lighting.GlobalShadows = true
+            Lighting.FogEnd = 10000
+            
+            for _, data in ipairs(cachedAtmosphere) do
+                if data.obj then
+                    data.obj.Parent = data.parent
+                end
+            end
+            cachedAtmosphere = {}
+        end
+    end,
+}, "FullbrightToggle")
 
 Window.onUnloaded(function()
     print("Senzy Hub unloaded successfully")
