@@ -3,7 +3,7 @@ local SymbiosUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/SYM
 local Window = SymbiosUI:Window({
     Title    = "SENZY HUB",
     Subtitle = "Slayers 2 - Auto Farm & Tools",
-    Size     = UDim2.fromOffset(760, 520),
+    Size     = UDim2.fromOffset(820, 560),
     Keybind  = Enum.KeyCode.RightControl,
 })
 
@@ -31,51 +31,46 @@ pcall(function()
     SignalEvent = ReplicatedStorage.Communication.ServerAndClient.Signals.SignalEvent.Event
 end)
 
-local function getAvailableMonsters()
-    local monsterOptions = { "All" }
-    local addedNames = { ["All"] = true }
-    
-    pcall(function()
-        for _, region in ipairs(workspace.Humanoids.Regions:GetChildren()) do
-            local activeNpcs = region:FindFirstChild("ActiveNpcs")
-            if activeNpcs then
-                for _, npcFolder in ipairs(activeNpcs:GetChildren()) do
-                    for _, enemy in ipairs(npcFolder:GetChildren()) do
-                        if enemy:FindFirstChild("Humanoid") then
-                            local name = enemy.Name
-                            if not addedNames[name] then
-                                addedNames[name] = true
-                                table.insert(monsterOptions, name)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end)
-    
-    return monsterOptions
-end
+-- ย่อข้อความให้สั้นลง มองเห็น HP ครบชัวร์
+local monsterList = {
+    "All",
+    "Reaper | Lv.60+ (HP: 3K)",
+    "Gyutai | Lv.75+ (HP: 3K)",
+    "Datai | Lv.90+ (HP: 3K)",
+    "Akazo | Lv.100+ (HP: 3K)",
+    "Saneri | Lv.120+ (HP: 3K)",
+    "Serpent Trainee | Lv.10 (HP: 600)",
+    "Prowler Captain | Lv.40 (HP: 1.9K)",
+    "Bandit | Lv.1 (HP: 45)",
+    "Zuko | Lv.25 (HP: 300)"
+}
 
 local dropdownObj = targetSec:Dropdown({
     Name     = "Select Target",
-    Options  = { "All" },
+    Options  = monsterList,
     Multi    = false,
     Required = true,
     Search   = true,
     Default  = 1,
-    Callback = function(value)
-        Config.SelectedTarget = value
+    Callback = function(displayValue)
+        if displayValue == "All" then
+            Config.SelectedTarget = "All"
+        else
+            -- ตัดเอาเฉพาะชื่อจริงก่อนเครื่องหมาย | ไปใช้ฟาร์ม
+            local realName = string.match(displayValue, "^(.-)%s*|")
+            if realName then
+                Config.SelectedTarget = realName:gsub("%s+$", "") -- ตัดช่องว่างท้ายออก
+            else
+                Config.SelectedTarget = displayValue
+            end
+        end
     end,
 }, "TargetDropdown")
 
 targetSec:Button({
-    Name = "Refresh Monster List",
+    Name = "Refresh List",
     Callback = function()
-        local newList = getAvailableMonsters()
-        dropdownObj:ClearOptions()
-        dropdownObj:InsertOptions(newList)
-        Window:Notify({ Title = "Success", Description = "Refreshed monster list!", Lifetime = 3 })
+        Window:Notify({ Title = "Success", Description = "Monster list reloaded!", Lifetime = 3 })
     end,
 }, "RefreshBtn")
 
@@ -106,20 +101,15 @@ local function getTargetBySelection()
     local myPos = char.HumanoidRootPart.Position
 
     pcall(function()
-        for _, region in ipairs(workspace.Humanoids.Regions:GetChildren()) do
-            local activeNpcs = region:FindFirstChild("ActiveNpcs")
-            if activeNpcs then
-                for _, npcFolder in ipairs(activeNpcs:GetChildren()) do
-                    for _, enemy in ipairs(npcFolder:GetChildren()) do
-                        if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") then
-                            if enemy.Humanoid.Health > 0 then
-                                if Config.SelectedTarget == "All" or enemy.Name == Config.SelectedTarget then
-                                    local dist = (enemy.HumanoidRootPart.Position - myPos).Magnitude
-                                    if dist < shortestDistance then
-                                        shortestDistance = dist
-                                        target = enemy
-                                    end
-                                end
+        if workspace:FindFirstChild("Humanoids") then
+            for _, enemy in ipairs(workspace.Humanoids:GetDescendants()) do
+                if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") then
+                    if enemy.Humanoid.Health > 0 then
+                        if Config.SelectedTarget == "All" or enemy.Name == Config.SelectedTarget then
+                            local dist = (enemy.HumanoidRootPart.Position - myPos).Magnitude
+                            if dist < shortestDistance then
+                                shortestDistance = dist
+                                target = enemy
                             end
                         end
                     end
@@ -156,7 +146,6 @@ farmSec:Toggle({
     end,
 }, "AutoFarmToggle")
 
--- ระบบ Fullbright แบบลบหมอกและเคลียร์แสง
 local cachedAtmosphere = {}
 visualSec:Toggle({
     Name = "Fullbright (Remove Darkness & Fog)",
@@ -170,7 +159,6 @@ visualSec:Toggle({
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 999999
             
-            -- ซ่อนหรือลบ Atmosphere และ DepthOfField ใน Lighting ออกชั่วคราว
             for _, obj in ipairs(Lighting:GetChildren()) do
                 if obj:IsA("Atmosphere") or obj:IsA("DepthOfFieldEffect") or obj:IsA("BlurEffect") then
                     table.insert(cachedAtmosphere, {obj = obj, parent = obj.Parent})
@@ -178,7 +166,6 @@ visualSec:Toggle({
                 end
             end
         else
-            -- คืนค่าเดิม
             Lighting.Brightness = 1
             Lighting.ClockTime = 12
             Lighting.GlobalShadows = true
